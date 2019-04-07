@@ -1,0 +1,49 @@
+{
+  "name": "use-local-slice",
+  "description": "A react hook to use reducers for local state in a typesafe way, with an API like createSlice from redux-starter-kit and immer integration.",
+  "version": "1.0.0",
+  "repository": "https://github.com/phryneas/use-local-slice",
+  "author": "phryneas",
+  "license": "MIT",
+  "private": false,
+  "sideEffects": false,
+  "dependencies": {
+    "immer": "^1.12.1"
+  },
+  "peerDependencies": {
+    "react": ">=16.8.0"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.4.3",
+    "@babel/preset-typescript": "^7.3.3",
+    "@types/jest": "^24.0.11",
+    "@types/react": "^16.8.12",
+    "@typescript-eslint/eslint-plugin": "^1.6.0",
+    "@typescript-eslint/parser": "^1.6.0",
+    "eslint": "^5.16.0",
+    "eslint-plugin-react-hooks": "^1.6.0",
+    "jest": "^24.7.1",
+    "microbundle": "^0.11.0",
+    "prettier": "^1.16.4",
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
+    "react-hooks-testing-library": "^0.4.0",
+    "typescript": "^3.4.2"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "unpkg": "dist/index.umd.js",
+  "source": "src/index.ts",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/*.js",
+    "dist/*.mjs",
+    "dist/*.map",
+    "dist/index.d.ts"
+  ],
+  "scripts": {
+    "build": "microbundle",
+    "dev": "microbundle watch",
+    "test": "jest"
+  }
+}

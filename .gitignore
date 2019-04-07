@@ -1,0 +1,8 @@
+.rts2_cache_cjs
+.rts2_cache_es
+.rts2_cache_umd
+dist
+node_modules
+coverage
+*.tgz
+yarn-error.log
