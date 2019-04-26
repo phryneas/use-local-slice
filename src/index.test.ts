@@ -395,7 +395,7 @@ describe("immer integration in reducers", () => {
 });
 
 describe("middlewares", () => {
-  it("can access the state before next", () => {
+  it("can access the state before next(action)", () => {
     let before: any;
     const middleware: Middleware = store => next => action => {
       before = store.getState();
@@ -419,7 +419,7 @@ describe("middlewares", () => {
     expect(before).toEqual({ stringProp: "hello" });
   });
 
-  it("can access the state after next", () => {
+  it("can NOT! access the state after next(action) synchronously", () => {
     let after: any;
     const middleware: Middleware = store => next => action => {
       next(action);
@@ -439,6 +439,38 @@ describe("middlewares", () => {
     });
 
     act(() => result.current[1].concat("test"));
+
+    expect(after).not.toEqual(result.current[0]);
+  });
+
+  it("can access the state after next(action) by awaiting next asynchronously", async () => {
+    let after: any;
+    let onMiddlewareFinished: () => void;
+    let middlewareFinished = new Promise(
+      resolve => (onMiddlewareFinished = resolve)
+    );
+
+    const middleware: Middleware = store => next => async action => {
+      await next(action);
+      after = store.getState();
+      onMiddlewareFinished!();
+    };
+
+    const { result } = renderUseLocalSlice({
+      initialState: {
+        stringProp: "hello"
+      },
+      reducers: {
+        concat(state, action: { payload: string }) {
+          return { stringProp: state.stringProp + action.payload };
+        }
+      },
+      middlewares: [middleware]
+    });
+
+    act(() => void result.current[1].concat("test"));
+
+    await middlewareFinished;
 
     expect(after).toEqual(result.current[0]);
   });
