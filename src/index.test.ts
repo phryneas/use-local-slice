@@ -1,5 +1,6 @@
 import { renderHook, cleanup, act } from "react-hooks-testing-library";
 import { useLocalSlice, UseLocalSliceOptions, ReducerMap } from "./";
+import { Middleware } from "redux";
 
 afterEach(cleanup);
 
@@ -390,5 +391,109 @@ describe("immer integration in reducers", () => {
     let [newState] = result.current;
     expect(newState).toEqual({ stringProp: "hello world" });
     expect(newState).not.toBe(state);
+  });
+});
+
+describe("middlewares", () => {
+  it("can access the state before next", () => {
+    let before: any;
+    const middleware: Middleware = store => next => action => {
+      before = store.getState();
+      next(action);
+    };
+
+    const { result } = renderUseLocalSlice({
+      initialState: {
+        stringProp: "hello"
+      },
+      reducers: {
+        concat(state, action: { payload: string }) {
+          return { stringProp: state.stringProp + action.payload };
+        }
+      },
+      middlewares: [middleware]
+    });
+
+    act(() => result.current[1].concat("test"));
+
+    expect(before).toEqual({ stringProp: "hello" });
+  });
+
+  it("can access the state after next", () => {
+    let after: any;
+    const middleware: Middleware = store => next => action => {
+      next(action);
+      after = store.getState();
+    };
+
+    const { result } = renderUseLocalSlice({
+      initialState: {
+        stringProp: "hello"
+      },
+      reducers: {
+        concat(state, action: { payload: string }) {
+          return { stringProp: state.stringProp + action.payload };
+        }
+      },
+      middlewares: [middleware]
+    });
+
+    act(() => result.current[1].concat("test"));
+
+    expect(after).toEqual(result.current[0]);
+  });
+
+  it("can modify an action", () => {
+    let after: any;
+    const middleware: Middleware = store => next => action => {
+      next({ ...action, payload: "foo" });
+    };
+
+    const { result } = renderUseLocalSlice({
+      initialState: {
+        stringProp: "hello"
+      },
+      reducers: {
+        concat(state, action: { payload: string }) {
+          return { stringProp: state.stringProp + action.payload };
+        }
+      },
+      middlewares: [middleware]
+    });
+
+    act(() => result.current[1].concat("test"));
+
+    expect(result.current[0]).toEqual({ stringProp: "hellofoo" });
+  });
+
+  it("can dispatch additional actions, correct order", () => {
+    let after: any;
+    const middleware: Middleware = store => next => action => {
+      if (!("skip" in action)) {
+        store.dispatch({ ...action, payload: "-before-", skip: true });
+      }
+      next(action);
+      if (!("skip" in action)) {
+        store.dispatch({ ...action, payload: "-after", skip: true });
+      }
+    };
+
+    const { result } = renderUseLocalSlice({
+      initialState: {
+        stringProp: "hello"
+      },
+      reducers: {
+        concat(state, action: { payload: string }) {
+          return { stringProp: state.stringProp + action.payload };
+        }
+      },
+      middlewares: [middleware]
+    });
+
+    act(() => result.current[1].concat("test"));
+
+    expect(result.current[0]).toEqual({
+      stringProp: "hello-before-test-after"
+    });
   });
 });
