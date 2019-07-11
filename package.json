@@ -1,14 +1,14 @@
 {
   "name": "use-local-slice",
   "description": "A react hook to use reducers for local state in a typesafe way, with an API like createSlice from redux-starter-kit and immer integration.",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "repository": "https://github.com/phryneas/use-local-slice",
   "author": "phryneas",
   "license": "MIT",
   "private": false,
   "sideEffects": false,
   "dependencies": {
-    "immer": "^1.12.1"
+    "immer": "^3.1.3"
   },
   "peerDependencies": {
     "react": ">=16.8.0"

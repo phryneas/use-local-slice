@@ -1,4 +1,4 @@
-import { useReducer, useMemo, useDebugValue, useState } from "react";
+import { useReducer, useMemo, useDebugValue } from "react";
 
 import produce, { Draft } from "immer";
 
@@ -24,16 +24,16 @@ export type ReducerMap<State> = {
 
 type DispatcherMap<Reducers extends ReducerMap<any>> = {
   [T in keyof Reducers]: Reducers[T] extends RedurcerWithoutPayload<any>
-    ? PayloadActionDispatch<void>
-    : Reducers[T] extends PayloadActionReducer<any, infer P>
-    ? PayloadActionDispatch<P>
-    : never
+  ? PayloadActionDispatch<void>
+  : Reducers[T] extends PayloadActionReducer<any, infer P>
+  ? PayloadActionDispatch<P>
+  : never
 };
 
 export interface UseLocalSliceOptions<
   State,
   Reducers extends ReducerMap<State>
-> {
+  > {
   initialState: State;
   reducers: Reducers;
   slice?: string;
