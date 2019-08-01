@@ -2,12 +2,12 @@ import { useReducer, useMemo, useDebugValue } from "react";
 
 import produce, { Draft } from "immer";
 
-type PayloadAction<P> = {
+export type PayloadAction<P> = {
   type: string;
   payload: P;
 };
 
-type PayloadActionDispatch<P = void> = void extends P
+export type PayloadActionDispatch<P = void> = void extends P
   ? () => void
   : (payload: P) => void;
 
@@ -22,7 +22,7 @@ export type ReducerMap<State> = {
   [actionType: string]: PayloadActionReducer<State, any>;
 };
 
-type DispatcherMap<Reducers extends ReducerMap<any>> = {
+export type DispatcherMap<Reducers extends ReducerMap<any>> = {
   [T in keyof Reducers]: Reducers[T] extends RedurcerWithoutPayload<any>
   ? PayloadActionDispatch<void>
   : Reducers[T] extends PayloadActionReducer<any, infer P>
