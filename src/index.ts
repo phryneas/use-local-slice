@@ -24,16 +24,16 @@ export type ReducerMap<State> = {
 
 export type DispatcherMap<Reducers extends ReducerMap<any>> = {
   [T in keyof Reducers]: Reducers[T] extends RedurcerWithoutPayload<any>
-  ? PayloadActionDispatch<void>
-  : Reducers[T] extends PayloadActionReducer<any, infer P>
-  ? PayloadActionDispatch<P>
-  : never
+    ? PayloadActionDispatch<void>
+    : Reducers[T] extends PayloadActionReducer<any, infer P>
+    ? PayloadActionDispatch<P>
+    : never;
 };
 
 export interface UseLocalSliceOptions<
   State,
   Reducers extends ReducerMap<State>
-  > {
+> {
   initialState: State;
   reducers: Reducers;
   slice?: string;
@@ -42,12 +42,12 @@ export interface UseLocalSliceOptions<
 export function useLocalSlice<State, Reducers extends ReducerMap<State>>({
   initialState,
   reducers,
-  slice = "unnamed"
+  slice = "unnamed",
 }: UseLocalSliceOptions<State, Reducers>): [State, DispatcherMap<Reducers>] {
   useDebugValue(slice);
 
   const reducer = (baseState: State, action: PayloadAction<any>) =>
-    produce(baseState, draftState =>
+    produce(baseState, (draftState) =>
       reducers[action.type](draftState, action)
     ) as State;
 
@@ -63,6 +63,7 @@ export function useLocalSlice<State, Reducers extends ReducerMap<State>>({
       map[type] = (payload: any) => dispatch({ type, payload });
     }
     return map as DispatcherMap<Reducers>;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, JSON.stringify(actionTypes)]);
 
   return [state, dispatchAction];

@@ -3,7 +3,12 @@
   "plugins": ["@typescript-eslint", "react-hooks"],
   "rules": {
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "indent": "off",
+    "@typescript-eslint/indent": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/prefer-interface": "off",
+    "@typescript-eslint/explicit-function-return-type": "off"
   },
   "extends": ["plugin:@typescript-eslint/recommended"]
 }
