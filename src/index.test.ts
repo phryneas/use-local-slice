@@ -1,7 +1,6 @@
-import { renderHook, cleanup, act } from "react-hooks-testing-library";
+import { renderHook, act } from "@testing-library/react-hooks";
 import { useLocalSlice, UseLocalSliceOptions, ReducerMap } from "./";
 
-afterEach(cleanup);
 
 function renderUseLocalSlice<S, R extends ReducerMap<S>>(
   options: UseLocalSliceOptions<S, R>
