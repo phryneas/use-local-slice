@@ -11,7 +11,7 @@ export type PayloadActionDispatch<P = void> = void extends P
   ? () => void
   : (payload: P) => void;
 
-export type RedurcerWithoutPayload<S> = (state: S) => S;
+export type ReducerWithoutPayload<S> = (state: S) => S;
 
 export type PayloadActionReducer<S, P = void> = (
   state: Draft<S>,
@@ -23,7 +23,7 @@ export type ReducerMap<State> = {
 };
 
 export type DispatcherMap<Reducers extends ReducerMap<any>> = {
-  [T in keyof Reducers]: Reducers[T] extends RedurcerWithoutPayload<any>
+  [T in keyof Reducers]: Reducers[T] extends ReducerWithoutPayload<any>
     ? PayloadActionDispatch<void>
     : Reducers[T] extends PayloadActionReducer<any, infer P>
     ? PayloadActionDispatch<P>
