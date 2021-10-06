@@ -6,3 +6,4 @@ node_modules
 coverage
 *.tgz
 yarn-error.log
+.idea
