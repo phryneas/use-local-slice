@@ -1,8 +1,10 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "lib": ["es2015", "dom"],
+    "module": "node20",
+    "moduleResolution": "node16",
+    "target": "es2024",
+    "lib": ["es2024", "dom"],
     "types": ["react"],
     "rootDir": "src",
     "outDir": "dist",

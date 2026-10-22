@@ -1,6 +1,7 @@
 import { useReducer, useMemo, useDebugValue } from "react";
 
-import produce, { Draft } from "immer";
+import { produce } from "immer";
+import type { Draft } from "immer";
 
 type IfMaybeUndefined<P, True, False> = [undefined] extends [P] ? True : False;
 
