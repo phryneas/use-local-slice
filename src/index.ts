@@ -2,9 +2,7 @@ import { useReducer, useMemo, useDebugValue } from "react";
 
 import produce, { Draft } from "immer";
 
-type IfMaybeUndefined<P, True, False> = [undefined] extends [P]
-  ? True
-  : False;
+type IfMaybeUndefined<P, True, False> = [undefined] extends [P] ? True : False;
 
 export type PayloadAction<P> = {
   type: string;
@@ -51,8 +49,11 @@ export function useLocalSlice<State, Reducers extends ReducerMap<State>>({
   useDebugValue(slice);
 
   const reducer = (baseState: State, action: PayloadAction<any>) =>
-    produce(baseState, (draftState) =>
-      reducers[action.type](draftState, action)
+    produce(
+      baseState,
+      (draftState) =>
+        // Reducers may return an undrafted State; Immer also accepts it at runtime.
+        reducers[action.type](draftState, action) as Draft<State> | void
     ) as State;
 
   const [state, dispatch] = useReducer(reducer, initialState);
