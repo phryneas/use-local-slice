@@ -2,6 +2,10 @@ import { useReducer, useMemo, useDebugValue } from "react";
 
 import produce, { Draft } from "immer";
 
+type IfMaybeUndefined<P, True, False> = [undefined] extends [P]
+  ? True
+  : False;
+
 export type PayloadAction<P> = {
   type: string;
   payload: P;
@@ -9,7 +13,7 @@ export type PayloadAction<P> = {
 
 export type PayloadActionDispatch<P = void> = void extends P
   ? () => void
-  : (payload: P) => void;
+  : IfMaybeUndefined<P, (payload?: P) => void, (payload: P) => void>;
 
 export type ReducerWithoutPayload<S> = (state: S) => S;
 

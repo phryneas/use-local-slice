@@ -63,6 +63,28 @@ describe("basic behaviour", () => {
     expect(state).toEqual(6);
   });
 
+  test("reducer with optional argument", () => {
+    const { result } = renderUseLocalSlice({
+      initialState: 5,
+      reducers: {
+        incrementBy(state, action: { payload?: number }) {
+          return state + (action.payload ?? 1);
+        }
+      }
+    });
+
+    let [state, dispatchAction] = result.current;
+    expect(state).toEqual(5);
+
+    act(() => dispatchAction.incrementBy());
+    [state, dispatchAction] = result.current;
+    expect(state).toEqual(6);
+
+    act(() => dispatchAction.incrementBy(9));
+    [state, dispatchAction] = result.current;
+    expect(state).toEqual(15);
+  });
+
   test("reducer with argument", () => {
     const { result } = renderUseLocalSlice({
       initialState: 5,
