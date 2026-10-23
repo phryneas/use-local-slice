@@ -1,5 +1,11 @@
-import { renderHook, act } from "@testing-library/react-hooks";
-import { useLocalSlice, UseLocalSliceOptions, ReducerMap } from "./";
+import "./test-setup.ts";
+import assert from "node:assert/strict";
+import { afterEach, describe, test } from "node:test";
+import { renderHook, act, cleanup } from "@testing-library/react/pure.js";
+import { useLocalSlice } from "./index.ts";
+import type { UseLocalSliceOptions, ReducerMap } from "./index.ts";
+
+afterEach(cleanup);
 
 
 function renderUseLocalSlice<S, R extends ReducerMap<S>>(
@@ -20,7 +26,7 @@ describe("basic behaviour", () => {
     const {
       current: [state]
     } = result;
-    expect(state).toEqual({ value: "test" });
+    assert.deepEqual(state, { value: "test" });
   });
 
   test("dispatchAction has reducer names as methods", () => {
@@ -39,10 +45,9 @@ describe("basic behaviour", () => {
     const {
       current: [, dispatchAction]
     } = result;
-    expect(dispatchAction).toEqual({
-      a: expect.any(Function),
-      b: expect.any(Function)
-    });
+    assert.deepEqual(Object.keys(dispatchAction), ["a", "b"]);
+    assert.equal(typeof dispatchAction.a, "function");
+    assert.equal(typeof dispatchAction.b, "function");
   });
 
   test("reducer without argument", () => {
@@ -56,11 +61,11 @@ describe("basic behaviour", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual(5);
+    assert.deepEqual(state, 5);
 
     act(() => dispatchAction.increment());
     [state, dispatchAction] = result.current;
-    expect(state).toEqual(6);
+    assert.deepEqual(state, 6);
   });
 
   test("reducer with optional argument", () => {
@@ -74,15 +79,15 @@ describe("basic behaviour", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual(5);
+    assert.deepEqual(state, 5);
 
     act(() => dispatchAction.incrementBy());
     [state, dispatchAction] = result.current;
-    expect(state).toEqual(6);
+    assert.deepEqual(state, 6);
 
     act(() => dispatchAction.incrementBy(9));
     [state, dispatchAction] = result.current;
-    expect(state).toEqual(15);
+    assert.deepEqual(state, 15);
   });
 
   test("reducer with argument", () => {
@@ -96,11 +101,11 @@ describe("basic behaviour", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual(5);
+    assert.deepEqual(state, 5);
 
     act(() => dispatchAction.incrementBy(9));
     [state, dispatchAction] = result.current;
-    expect(state).toEqual(14);
+    assert.deepEqual(state, 14);
   });
 
   test("multiple reducers in complex state", () => {
@@ -123,26 +128,26 @@ describe("basic behaviour", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual({
+    assert.deepEqual(state, {
       numberProp: 3,
       stringProp: "hello"
     });
 
     act(() => dispatchAction.incrementBy(9));
     [state, dispatchAction] = result.current;
-    expect(state.numberProp).toEqual(12);
+    assert.deepEqual(state.numberProp, 12);
 
     act(() => dispatchAction.concat(" world"));
     [state, dispatchAction] = result.current;
-    expect(state.stringProp).toEqual("hello world");
+    assert.deepEqual(state.stringProp, "hello world");
 
     act(() => dispatchAction.clearString());
     [state, dispatchAction] = result.current;
-    expect(state.stringProp).toEqual("");
+    assert.deepEqual(state.stringProp, "");
 
     act(() => dispatchAction.concat("new value"));
     [state, dispatchAction] = result.current;
-    expect(state.stringProp).toEqual("new value");
+    assert.deepEqual(state.stringProp, "new value");
   });
 
   test("rerender with same reducer names does return same dispatchAction instance", () => {
@@ -172,11 +177,11 @@ describe("basic behaviour", () => {
         stringProp: "hello"
       },
       reducers: {
-        incrementBy(state, action: { payload: number }) {
+        incrementBy(state) {
           // definitely different implementation - should not matter
           return state;
         },
-        concat(state, action: { payload: string }) {
+        concat(state) {
           return state;
         },
         clearString(state) {
@@ -187,7 +192,7 @@ describe("basic behaviour", () => {
 
     const [, newDispatchAction] = result.current;
 
-    expect(dispatchAction).toBe(newDispatchAction);
+    assert.equal(dispatchAction, newDispatchAction);
   });
 
   test("rerender with different reducer names does return different dispatchAction instance", () => {
@@ -236,13 +241,13 @@ describe("basic behaviour", () => {
 
     const [, newDispatchAction] = result.current;
 
-    expect(dispatchAction).not.toBe(newDispatchAction);
-    expect(Object.keys(dispatchAction)).toEqual([
+    assert.notEqual(dispatchAction, newDispatchAction);
+    assert.deepEqual(Object.keys(dispatchAction), [
       "incrementBy",
       "concat",
       "clearString"
     ]);
-    expect(Object.keys(newDispatchAction)).toEqual([
+    assert.deepEqual(Object.keys(newDispatchAction), [
       "incrementBy",
       "clearString",
       "different"
@@ -298,14 +303,14 @@ describe("basic behaviour", () => {
 
     const [, newDispatchAction] = result.current;
 
-    expect(dispatchAction).not.toBe(newDispatchAction);
+    assert.notEqual(dispatchAction, newDispatchAction);
 
-    expect(Object.keys(dispatchAction)).toEqual([
+    assert.deepEqual(Object.keys(dispatchAction), [
       "incrementBy",
       "concat",
       "clearString"
     ]);
-    expect(Object.keys(newDispatchAction)).toEqual([
+    assert.deepEqual(Object.keys(newDispatchAction), [
       "incrementBy",
       "concat",
       "clearString",
@@ -324,11 +329,11 @@ describe("basic behaviour", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toBe(5);
+    assert.equal(state, 5);
 
     act(() => dispatchAction.increment());
     [state] = result.current;
-    expect(state).toBe(6);
+    assert.equal(state, 6);
 
     rerender({
       initialState: 5,
@@ -340,11 +345,11 @@ describe("basic behaviour", () => {
     });
 
     let [, newDispatchAction] = result.current;
-    expect(dispatchAction).toBe(newDispatchAction);
+    assert.equal(dispatchAction, newDispatchAction);
 
     act(() => dispatchAction.increment());
     [state] = result.current;
-    expect(state).toBe(16);
+    assert.equal(state, 16);
   });
 });
 
@@ -362,12 +367,12 @@ describe("immer integration in reducers", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual({ stringProp: "hello" });
+    assert.deepEqual(state, { stringProp: "hello" });
 
     act(() => dispatchAction.concat(" world"));
     let [newState] = result.current;
-    expect(newState).toEqual({ stringProp: "hello world" });
-    expect(newState).not.toBe(state);
+    assert.deepEqual(newState, { stringProp: "hello world" });
+    assert.notEqual(newState, state);
   });
 
   test("returning of modified draft", () => {
@@ -384,12 +389,12 @@ describe("immer integration in reducers", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual({ stringProp: "hello" });
+    assert.deepEqual(state, { stringProp: "hello" });
 
     act(() => dispatchAction.concat(" world"));
     let [newState] = result.current;
-    expect(newState).toEqual({ stringProp: "hello world" });
-    expect(newState).not.toBe(state);
+    assert.deepEqual(newState, { stringProp: "hello world" });
+    assert.notEqual(newState, state);
   });
 
   test("return something different", () => {
@@ -405,11 +410,11 @@ describe("immer integration in reducers", () => {
     });
 
     let [state, dispatchAction] = result.current;
-    expect(state).toEqual({ stringProp: "hello" });
+    assert.deepEqual(state, { stringProp: "hello" });
 
     act(() => dispatchAction.concat(" world"));
     let [newState] = result.current;
-    expect(newState).toEqual({ stringProp: "hello world" });
-    expect(newState).not.toBe(state);
+    assert.deepEqual(newState, { stringProp: "hello world" });
+    assert.notEqual(newState, state);
   });
 });
