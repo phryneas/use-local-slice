@@ -29,6 +29,7 @@
     "@typescript-eslint/parser": "^8.72.0",
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "expect-type": "^1.4.0",
     "jsdom": "^30.1.3",
     "pkg-pr-new": "0.0.91",
     "prettier": "^3.9.10",
@@ -44,6 +45,21 @@
       "types": "./dist/index.d.ts",
       "module-sync": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./buildUseLocalSlice": {
+      "types": "./dist/buildUseLocalSlice.d.ts",
+      "module-sync": "./dist/buildUseLocalSlice.js",
+      "default": "./dist/buildUseLocalSlice.js"
+    },
+    "./usePlainLocalSlice": {
+      "types": "./dist/usePlainLocalSlice.d.ts",
+      "module-sync": "./dist/usePlainLocalSlice.js",
+      "default": "./dist/usePlainLocalSlice.js"
+    },
+    "./useLocalSlice": {
+      "types": "./dist/useLocalSlice.d.ts",
+      "module-sync": "./dist/useLocalSlice.js",
+      "default": "./dist/useLocalSlice.js"
     }
   },
   "files": [
@@ -52,7 +68,7 @@
   "scripts": {
     "build": "rimraf dist && tsc --project tsconfig.build.json",
     "dev": "tsc --project tsconfig.build.json --watch",
-    "test": "tsc --noEmit && node --test src/*.test.ts"
+    "test": "tsc --noEmit && eslint src && node --test src/*.test.ts"
   },
   "keywords": [
     "hook",

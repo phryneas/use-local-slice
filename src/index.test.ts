@@ -3,16 +3,14 @@ import assert from "node:assert/strict";
 import { afterEach, describe, test } from "node:test";
 import { renderHook, act, cleanup } from "@testing-library/react/pure.js";
 import { useLocalSlice } from "./index.ts";
-import type { UseLocalSliceOptions, ReducerMap } from "./index.ts";
 
 afterEach(cleanup);
 
-
-function renderUseLocalSlice<S, R extends ReducerMap<S>>(
-  options: UseLocalSliceOptions<S, R>
+function renderUseLocalSlice<S, R extends useLocalSlice.ReducerMap<S>>(
+  options: useLocalSlice.UseLocalSliceOptions<S, R>,
 ) {
-  return renderHook((opts: UseLocalSliceOptions<S, R>) => useLocalSlice(opts), {
-    initialProps: options
+  return renderHook((opts: useLocalSlice.UseLocalSliceOptions<S, R>) => useLocalSlice(opts), {
+    initialProps: options,
   });
 }
 
@@ -20,11 +18,11 @@ describe("basic behaviour", () => {
   test("initial state", () => {
     const { result } = renderUseLocalSlice({
       initialState: { value: "test" },
-      reducers: {}
+      reducers: {},
     });
 
     const {
-      current: [state]
+      current: [state],
     } = result;
     assert.deepEqual(state, { value: "test" });
   });
@@ -38,12 +36,12 @@ describe("basic behaviour", () => {
         },
         b(state) {
           return state;
-        }
-      }
+        },
+      },
     });
 
     const {
-      current: [, dispatchAction]
+      current: [, dispatchAction],
     } = result;
     assert.deepEqual(Object.keys(dispatchAction), ["a", "b"]);
     assert.equal(typeof dispatchAction.a, "function");
@@ -56,8 +54,8 @@ describe("basic behaviour", () => {
       reducers: {
         increment(state) {
           return state + 1;
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -74,8 +72,8 @@ describe("basic behaviour", () => {
       reducers: {
         incrementBy(state, action: { payload?: number }) {
           return state + (action.payload ?? 1);
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -96,8 +94,8 @@ describe("basic behaviour", () => {
       reducers: {
         incrementBy(state, action: { payload: number }) {
           return state + action.payload;
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -112,7 +110,7 @@ describe("basic behaviour", () => {
     const { result } = renderUseLocalSlice({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state, action: { payload: number }) {
@@ -123,14 +121,14 @@ describe("basic behaviour", () => {
         },
         clearString(state) {
           return { ...state, stringProp: "" };
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
     assert.deepEqual(state, {
       numberProp: 3,
-      stringProp: "hello"
+      stringProp: "hello",
     });
 
     act(() => dispatchAction.incrementBy(9));
@@ -154,7 +152,7 @@ describe("basic behaviour", () => {
     const { result, rerender } = renderUseLocalSlice({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state, action: { payload: number }) {
@@ -165,8 +163,8 @@ describe("basic behaviour", () => {
         },
         clearString(state) {
           return { ...state, stringProp: "" };
-        }
-      }
+        },
+      },
     });
 
     const [, dispatchAction] = result.current;
@@ -174,7 +172,7 @@ describe("basic behaviour", () => {
     rerender({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state) {
@@ -186,8 +184,8 @@ describe("basic behaviour", () => {
         },
         clearString(state) {
           return state;
-        }
-      }
+        },
+      },
     });
 
     const [, newDispatchAction] = result.current;
@@ -199,7 +197,7 @@ describe("basic behaviour", () => {
     const { result, rerender } = renderUseLocalSlice({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state, action: { payload: number }) {
@@ -210,8 +208,8 @@ describe("basic behaviour", () => {
         },
         clearString(state) {
           return { ...state, stringProp: "" };
-        }
-      }
+        },
+      },
     });
 
     const [, dispatchAction] = result.current;
@@ -224,7 +222,7 @@ describe("basic behaviour", () => {
     rerender({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state: S, action: { payload: number }) {
@@ -235,8 +233,8 @@ describe("basic behaviour", () => {
         },
         different(state: S) {
           return state;
-        }
-      }
+        },
+      },
     } as any);
 
     const [, newDispatchAction] = result.current;
@@ -245,12 +243,12 @@ describe("basic behaviour", () => {
     assert.deepEqual(Object.keys(dispatchAction), [
       "incrementBy",
       "concat",
-      "clearString"
+      "clearString",
     ]);
     assert.deepEqual(Object.keys(newDispatchAction), [
       "incrementBy",
       "clearString",
-      "different"
+      "different",
     ]);
   });
 
@@ -258,7 +256,7 @@ describe("basic behaviour", () => {
     const { result, rerender } = renderUseLocalSlice({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state, action: { payload: number }) {
@@ -269,8 +267,8 @@ describe("basic behaviour", () => {
         },
         clearString(state) {
           return { ...state, stringProp: "" };
-        }
-      }
+        },
+      },
     });
 
     const [, dispatchAction] = result.current;
@@ -283,7 +281,7 @@ describe("basic behaviour", () => {
     rerender({
       initialState: {
         numberProp: 3,
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         incrementBy(state: S, action: { payload: number }) {
@@ -297,8 +295,8 @@ describe("basic behaviour", () => {
         },
         additional(state: S) {
           return state;
-        }
-      }
+        },
+      },
     } as any);
 
     const [, newDispatchAction] = result.current;
@@ -308,13 +306,13 @@ describe("basic behaviour", () => {
     assert.deepEqual(Object.keys(dispatchAction), [
       "incrementBy",
       "concat",
-      "clearString"
+      "clearString",
     ]);
     assert.deepEqual(Object.keys(newDispatchAction), [
       "incrementBy",
       "concat",
       "clearString",
-      "additional"
+      "additional",
     ]);
   });
 
@@ -324,8 +322,8 @@ describe("basic behaviour", () => {
       reducers: {
         increment(state) {
           return state + 1;
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -340,8 +338,8 @@ describe("basic behaviour", () => {
       reducers: {
         increment(state) {
           return state + 10;
-        }
-      }
+        },
+      },
     });
 
     let [, newDispatchAction] = result.current;
@@ -357,13 +355,13 @@ describe("immer integration in reducers", () => {
   test("modification of draft", () => {
     const { result } = renderUseLocalSlice({
       initialState: {
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         concat(state, action: { payload: string }) {
           state.stringProp += action.payload;
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -378,14 +376,14 @@ describe("immer integration in reducers", () => {
   test("returning of modified draft", () => {
     const { result } = renderUseLocalSlice({
       initialState: {
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         concat(state, action: { payload: string }) {
           state.stringProp += action.payload;
           return state;
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
@@ -400,13 +398,13 @@ describe("immer integration in reducers", () => {
   test("return something different", () => {
     const { result } = renderUseLocalSlice({
       initialState: {
-        stringProp: "hello"
+        stringProp: "hello",
       },
       reducers: {
         concat(state, action: { payload: string }) {
           return { stringProp: state.stringProp + action.payload };
-        }
-      }
+        },
+      },
     });
 
     let [state, dispatchAction] = result.current;
