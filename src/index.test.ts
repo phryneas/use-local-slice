@@ -15,6 +15,33 @@ function renderUseLocalSlice<S, R extends useLocalSlice.ReducerMap<S>>(
 }
 
 describe("basic behaviour", () => {
+  test("lazily initializes state and preserves it across rerenders", () => {
+    const inputs: string[] = [];
+    const { result, rerender } = renderHook((initialArg: string) =>
+      useLocalSlice({
+        initialArg,
+        init: (value) => {
+          inputs.push(value);
+          return { count: Number(value) };
+        },
+        reducers: {
+          increment(draft, action: { payload: number }) {
+            draft.count += action.payload;
+          },
+        },
+      }),
+      { initialProps: "2" },
+    );
+    assert.deepEqual(result.current[0], { count: 2 });
+    assert.deepEqual(inputs, ["2"]);
+    const dispatch = result.current[1];
+    act(() => dispatch.increment(3));
+    rerender("100");
+    assert.deepEqual(result.current[0], { count: 5 });
+    assert.equal(result.current[1], dispatch);
+    assert.deepEqual(inputs, ["2"]);
+  });
+
   test("initial state", () => {
     const { result } = renderUseLocalSlice({
       initialState: { value: "test" },

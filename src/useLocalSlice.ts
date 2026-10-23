@@ -23,6 +23,12 @@ export declare namespace useLocalSlice {
     State,
     Reducers extends ReducerMap<State>,
   > extends buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, ImmerHKT> {}
+
+  export interface UseLocalSliceOptionsWithInit<
+    State,
+    InitialArg,
+    Reducers extends ReducerMap<State>,
+  > extends buildUseLocalSlice.UseLocalSliceOptionsWithInit<State, InitialArg, Reducers, ImmerHKT> {}
 }
 
 export const useLocalSlice = buildUseLocalSlice<ImmerHKT>((state, recipe) =>

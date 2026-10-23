@@ -80,3 +80,31 @@ export function useFactoryTypeChecks(initialState: State) {
 
   return { unchangedStateType, replacement };
 }
+
+export function useLazyFactoryTypeChecks() {
+  const [state, dispatch] = useMutableSlice({
+    initialArg: "2",
+    init: (value) => {
+      expectTypeOf(value).toEqualTypeOf<string>();
+      return { count: Number(value) } as State;
+    },
+    reducers: {
+      increment(draft, action: { payload: number }) {
+        expectTypeOf(draft).toEqualTypeOf<Mutable<State>>();
+        draft.count += action.payload;
+        return draft;
+      },
+      optional: (draft, action: { payload?: number }) => ({
+        count: draft.count + (action.payload ?? 1),
+      }),
+      reset: () => ({ count: 0 }),
+    },
+  });
+  expectTypeOf(state).toEqualTypeOf<State>();
+  expectTypeOf(dispatch.increment).toEqualTypeOf<(payload: number) => void>();
+  expectTypeOf(dispatch.optional).toEqualTypeOf<(payload?: number) => void>();
+  expectTypeOf(dispatch.reset).toEqualTypeOf<() => void>();
+  expectTypeOf<keyof typeof dispatch>().toEqualTypeOf<"increment" | "optional" | "reset">();
+  // @ts-expect-error Lazy initialization retains required payloads.
+  dispatch.increment();
+}

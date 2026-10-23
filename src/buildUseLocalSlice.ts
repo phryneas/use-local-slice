@@ -48,7 +48,7 @@ export declare namespace buildUseLocalSlice {
   };
 
   export type DispatcherMap<
-    Reducers extends ReducerMap<any, Types>,
+    Reducers extends Record<string, unknown>,
     Types extends ProduceHKT = PlainHKT,
   > = {
     [T in keyof Reducers]: Reducers[T] extends ReducerWithoutPayload<any>
@@ -64,6 +64,21 @@ export declare namespace buildUseLocalSlice {
     Types extends ProduceHKT = PlainHKT,
   > {
     initialState: State;
+    initialArg?: never;
+    init?: never;
+    reducers: Reducers;
+    slice?: string;
+  }
+
+  export interface UseLocalSliceOptionsWithInit<
+    State,
+    InitialArg,
+    Reducers extends ReducerMap<State, Types>,
+    Types extends ProduceHKT = PlainHKT,
+  > {
+    initialState?: never;
+    initialArg: InitialArg;
+    init: (initialArg: InitialArg) => State;
     reducers: Reducers;
     slice?: string;
   }
@@ -72,23 +87,38 @@ export declare namespace buildUseLocalSlice {
 export function buildUseLocalSlice<Types extends buildUseLocalSlice.ProduceHKT = PlainHKT>(
   produce: buildUseLocalSlice.Produce<Types>,
 ) {
-  return function useLocalSlice<
+  function useLocalSlice<
     State,
-    Reducers extends buildUseLocalSlice.ReducerMap<State, Types>,
-  >({
-    initialState,
-    reducers,
-    slice = "unnamed",
-  }: buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>): [
+    InitialArg,
+    Reducers extends Record<string, unknown>,
+  >(options: buildUseLocalSlice.UseLocalSliceOptionsWithInit<State, InitialArg, Reducers & buildUseLocalSlice.ReducerMap<State, Types>, Types>): [
     State,
     buildUseLocalSlice.DispatcherMap<Reducers, Types>,
-  ] {
+  ];
+  function useLocalSlice<
+    State,
+    Reducers extends buildUseLocalSlice.ReducerMap<State, Types>,
+  >(options: buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>): [
+    State,
+    buildUseLocalSlice.DispatcherMap<Reducers, Types>,
+  ];
+  function useLocalSlice<
+    State,
+    Reducers extends buildUseLocalSlice.ReducerMap<State, Types>,
+    InitialArg = State,
+  >(options:
+    | buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>
+    | buildUseLocalSlice.UseLocalSliceOptionsWithInit<State, InitialArg, Reducers, Types>
+  ): [State, buildUseLocalSlice.DispatcherMap<Reducers, Types>] {
+    const { reducers, slice = "unnamed" } = options;
     useDebugValue(slice);
 
     const reducer = (baseState: State, action: buildUseLocalSlice.PayloadAction<any>) =>
       produce(baseState, (draft) => reducers[action.type](draft, action));
 
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const [state, dispatch] = useReducer(reducer, options, (options) =>
+      options.init ? options.init(options.initialArg) : options.initialState,
+    );
     const actionTypes = Object.keys(reducers);
 
     const dispatchAction = useMemo(() => {
@@ -101,5 +131,7 @@ export function buildUseLocalSlice<Types extends buildUseLocalSlice.ProduceHKT =
     }, [dispatch, JSON.stringify(actionTypes)]);
 
     return [state, dispatchAction];
-  };
+  }
+
+  return useLocalSlice;
 }
