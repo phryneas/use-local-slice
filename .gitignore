@@ -5,5 +5,5 @@ dist
 node_modules
 coverage
 *.tgz
-yarn-error.log
+npm-debug.log*
 .idea
