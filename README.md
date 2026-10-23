@@ -3,7 +3,7 @@
 An opinionated react hook to use reducers for local state
 
 - in a typesafe way
-- with an API like [createSlice](https://redux-starter-kit.js.org/api/createslice) from [redux-starter-kit](https://redux-starter-kit.js.org)
+- with an API like [createSlice](https://redux-toolkit.js.org/api/createSlice) from [Redux Toolkit](https://redux-toolkit.js.org)
 - with [immer](https://github.com/mweststrate/immer) integration
 
 ## How to use it
