@@ -22,14 +22,12 @@ jobs:
           package-manager-cache: false
 
       - name: Install dependencies
-        run: |
-          npm install --global yarn@1.22.22
-          yarn install --frozen-lockfile --non-interactive
+        run: npm ci
 
       - name: Test and build
         run: |
-          yarn test
-          yarn build
+          npm test
+          npm run build
 
       - name: Publish preview
-        run: yarn pkg-pr-new publish --previewVersion --no-template --comment=off
+        run: npm exec -- pkg-pr-new publish --previewVersion --no-template --comment=off
