@@ -15,6 +15,38 @@ const increment: usePlainLocalSlice.PayloadActionReducer<State, number> = (
 
 const reducers = { increment } satisfies usePlainLocalSlice.ReducerMap<State>;
 
+export function usePlainConditionalTypeChecks(lazy: boolean) {
+  const options:
+    | usePlainLocalSlice.UseLocalSliceOptions<State, typeof reducers>
+    | usePlainLocalSlice.UseLocalSliceOptionsWithInit<State, string, typeof reducers> = lazy
+      ? { initialArg: "2", init: (value) => ({ count: Number(value) }), reducers }
+      : { initialState: { count: 2 }, reducers };
+
+  const [state, dispatch] = usePlainLocalSlice(options);
+  expectTypeOf(state).toEqualTypeOf<State>();
+  expectTypeOf(dispatch).toEqualTypeOf<usePlainLocalSlice.DispatcherMap<typeof reducers>>();
+  expectTypeOf(dispatch.increment).toEqualTypeOf<(payload: number) => void>();
+  // @ts-expect-error Conditional initialization retains required payloads.
+  dispatch.increment();
+
+  const inferredOptions = lazy
+    ? { initialArg: "2", init: (value: string): State => ({ count: Number(value) }), reducers }
+    : { initialState: { count: 2 } as State, reducers };
+  const [inferredState, inferredDispatch] = usePlainLocalSlice(inferredOptions);
+  expectTypeOf(inferredState).toEqualTypeOf<State>();
+  expectTypeOf(inferredDispatch).toEqualTypeOf<typeof dispatch>();
+}
+
+export function usePlainOptionalStateTypeChecks(lazy: boolean, initialState: State | undefined) {
+  const options:
+    | usePlainLocalSlice.UseLocalSliceOptions<State | undefined, {}>
+    | usePlainLocalSlice.UseLocalSliceOptionsWithInit<State | undefined, State | undefined, {}> = lazy
+      ? { initialArg: initialState, init: (value) => value, reducers: {} }
+      : { initialState, reducers: {} };
+
+  expectTypeOf(usePlainLocalSlice(options)[0]).toEqualTypeOf<State | undefined>();
+}
+
 export function usePlainNamespaceTypeChecks(initialState: State) {
   const options: usePlainLocalSlice.UseLocalSliceOptions<State, typeof reducers> = {
     initialState,
@@ -55,13 +87,8 @@ export function usePlainTypeChecks(initialState: State) {
   // @ts-expect-error Plain dispatchers also require their payload.
   plainDispatch.increment();
 
-  usePlainLocalSlice({
-    initialState,
-    reducers: {
-      // @ts-expect-error Plain reducers must return a state.
-      invalid() {},
-    },
-  });
+  // @ts-expect-error Plain reducers must return a state.
+  usePlainLocalSlice({ initialState, reducers: { invalid() {} } });
 }
 
 export function usePlainLazyTypeChecks() {
