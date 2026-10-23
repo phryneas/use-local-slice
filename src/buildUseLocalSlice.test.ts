@@ -21,7 +21,8 @@ const useBoxSlice = buildUseLocalSlice<BoxHKT>((state, recipe) => {
 test("custom producers apply their draft and recipe-return transformations", () => {
   const { result } = renderHook(() =>
     useBoxSlice({
-      initialState: 1,
+      initialArg: "1",
+      init: Number,
       reducers: {
         increment(draft, action: { payload: number }) {
           draft.value += action.payload;

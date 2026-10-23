@@ -21,7 +21,9 @@ export declare namespace buildUseLocalSlice {
     recipe: (draft: DraftOf<Types, State>) => RecipeReturnOf<Types, State>,
   ) => State;
 
-  type IfMaybeUndefined<P, True, False> = [undefined] extends [P] ? True : False;
+  type IfMaybeUndefined<P, True, False> = [undefined] extends [P]
+    ? True
+    : False;
 
   export type PayloadAction<P> = {
     type: string;
@@ -48,7 +50,7 @@ export declare namespace buildUseLocalSlice {
   };
 
   export type DispatcherMap<
-    Reducers extends ReducerMap<any, Types>,
+    Reducers extends Record<string, unknown>,
     Types extends ProduceHKT = PlainHKT,
   > = {
     [T in keyof Reducers]: Reducers[T] extends ReducerWithoutPayload<any>
@@ -64,31 +66,91 @@ export declare namespace buildUseLocalSlice {
     Types extends ProduceHKT = PlainHKT,
   > {
     initialState: State;
+    initialArg?: never;
+    init?: never;
     reducers: Reducers;
     slice?: string;
   }
+
+  export interface UseLocalSliceOptionsWithInit<
+    State,
+    InitialArg,
+    Reducers extends ReducerMap<State, Types>,
+    Types extends ProduceHKT = PlainHKT,
+  > {
+    initialState?: never;
+    initialArg: InitialArg;
+    init: (initialArg: InitialArg) => State;
+    reducers: Reducers;
+    slice?: string;
+  }
+
+  export interface Hook<
+    Types extends buildUseLocalSlice.ProduceHKT = PlainHKT,
+  > {
+    <State, InitialArg, Reducers extends Record<string, unknown>>(
+      options: buildUseLocalSlice.UseLocalSliceOptionsWithInit<
+        State,
+        InitialArg,
+        Reducers & buildUseLocalSlice.ReducerMap<State, Types>,
+        Types
+      >,
+    ): [State, buildUseLocalSlice.DispatcherMap<Reducers, Types>];
+    <State, Reducers extends buildUseLocalSlice.ReducerMap<State, Types>>(
+      options: buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>,
+    ): [State, buildUseLocalSlice.DispatcherMap<Reducers, Types>];
+    // Infer union state from init without including the absent initialState's undefined.
+    // Default to never so invalid eager calls cannot fall back to an unknown state.
+    <
+      State = never,
+      Reducers extends buildUseLocalSlice.ReducerMap<State, Types> =
+        buildUseLocalSlice.ReducerMap<State, Types>,
+      InitialArg = State,
+    >(
+      options:
+        | buildUseLocalSlice.UseLocalSliceOptions<
+            NoInfer<State>,
+            Reducers,
+            Types
+          >
+        | buildUseLocalSlice.UseLocalSliceOptionsWithInit<
+            State,
+            InitialArg,
+            Reducers,
+            Types
+          >,
+    ): [State, buildUseLocalSlice.DispatcherMap<Reducers, Types>];
+  }
 }
 
-export function buildUseLocalSlice<Types extends buildUseLocalSlice.ProduceHKT = PlainHKT>(
-  produce: buildUseLocalSlice.Produce<Types>,
-) {
+export function buildUseLocalSlice<
+  Types extends buildUseLocalSlice.ProduceHKT = PlainHKT,
+>(produce: buildUseLocalSlice.Produce<Types>): buildUseLocalSlice.Hook<Types> {
   return function useLocalSlice<
     State,
     Reducers extends buildUseLocalSlice.ReducerMap<State, Types>,
-  >({
-    initialState,
-    reducers,
-    slice = "unnamed",
-  }: buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>): [
-    State,
-    buildUseLocalSlice.DispatcherMap<Reducers, Types>,
-  ] {
+    InitialArg = State,
+  >(
+    options:
+      | buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, Types>
+      | buildUseLocalSlice.UseLocalSliceOptionsWithInit<
+          State,
+          InitialArg,
+          Reducers,
+          Types
+        >,
+  ): [State, buildUseLocalSlice.DispatcherMap<Reducers, Types>] {
+    const { reducers, slice = "unnamed" } = options;
     useDebugValue(slice);
 
-    const reducer = (baseState: State, action: buildUseLocalSlice.PayloadAction<any>) =>
-      produce(baseState, (draft) => reducers[action.type](draft, action));
+    const reducer = (
+      baseState: State,
+      action: buildUseLocalSlice.PayloadAction<any>,
+    ) => produce(baseState, (draft) => reducers[action.type](draft, action));
 
-    const [state, dispatch] = useReducer(reducer, initialState);
+    const [state, dispatch] = useReducer(reducer, options, (options) =>
+      options.init ? options.init(options.initialArg) : options.initialState,
+    );
     const actionTypes = Object.keys(reducers);
 
     const dispatchAction = useMemo(() => {

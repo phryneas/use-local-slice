@@ -6,6 +6,33 @@ import { usePlainLocalSlice } from "./usePlainLocalSlice.ts";
 
 afterEach(cleanup);
 
+test("plain lazily initializes state without rerunning init on updates", () => {
+  const initialArg = { count: 2 };
+  const inputs: typeof initialArg[] = [];
+  const { result, rerender } = renderHook(() => usePlainLocalSlice({
+    initialArg,
+    init: (value) => {
+      inputs.push(value);
+      return { total: value.count };
+    },
+    reducers: {
+      increment: (state) => ({ total: state.total + 1 }),
+    },
+  }));
+  assert.deepEqual(result.current[0], { total: 2 });
+  assert.equal(inputs[0], initialArg);
+  act(() => result.current[1].increment());
+  rerender();
+  assert.deepEqual(result.current[0], { total: 3 });
+  assert.equal(inputs.length, 1);
+});
+
+test("plain preserves function-valued initial states", () => {
+  const initialState = () => { throw new Error("State must not be called as an initializer"); };
+  const { result } = renderHook(() => usePlainLocalSlice({ initialState, reducers: {} }));
+  assert.equal(result.current[0], initialState);
+});
+
 test("plain passes through state and uses reducer replacements", () => {
   const initialState: Readonly<{ count: number }> = Object.freeze({ count: 0 });
   let receivedState: typeof initialState | undefined;

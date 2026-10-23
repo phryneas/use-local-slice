@@ -21,6 +21,12 @@ export declare namespace usePlainLocalSlice {
     State,
     Reducers extends ReducerMap<State>,
   > extends buildUseLocalSlice.UseLocalSliceOptions<State, Reducers, PlainHKT> {}
+
+  export interface UseLocalSliceOptionsWithInit<
+    State,
+    InitialArg,
+    Reducers extends ReducerMap<State>,
+  > extends buildUseLocalSlice.UseLocalSliceOptionsWithInit<State, InitialArg, Reducers, PlainHKT> {}
 }
 
 export const usePlainLocalSlice = buildUseLocalSlice<PlainHKT>(

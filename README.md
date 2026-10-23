@@ -39,6 +39,28 @@ dispatchAction.toUpper();
 
 use-local-slice provides one dispatchAction method per reducer, and (for typescript users) ensures that these dispatchers are only called with correct payload types.
 
+## Lazy initialization
+
+Pass `initialArg` and `init` instead of `initialState` to derive the initial state when the hook mounts, like the three-argument form of `useReducer`:
+
+```typescript
+import { useLocalSlice } from "use-local-slice";
+
+const [state, dispatchAction] = useLocalSlice({
+  initialArg: 5,
+  init: (count) => ({ count }),
+  reducers: {
+    increment(draft) {
+      draft.count++;
+    }
+  }
+});
+```
+
+The argument and state can have different types. State and reducer types are inferred from the initializer's return type. This also works with `usePlainLocalSlice` and hooks created by `buildUseLocalSlice`.
+
+Keep `init` pure: React may call it twice in development Strict Mode. Changing `initialArg` or `init` after mounting does not reset the state. For explicitly typed options, each hook namespace provides `UseLocalSliceOptionsWithInit<State, InitialArg, Reducers>`.
+
 ## Exports
 
 The package exports `useLocalSlice`, `usePlainLocalSlice`, and `buildUseLocalSlice` from its main entry point. Each is also available through an individual entry point:

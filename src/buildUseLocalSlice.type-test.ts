@@ -16,6 +16,27 @@ const useMutableSlice = buildUseLocalSlice<MutableHKT>((state, recipe) =>
   recipe(state),
 );
 
+export function useConditionalFactoryTypeChecks(lazy: boolean) {
+  const reducers = {
+    increment(draft: Mutable<State>, action: { payload: number }) {
+      draft.count += action.payload;
+      return draft;
+    },
+  };
+  const options:
+    | buildUseLocalSlice.UseLocalSliceOptions<State, typeof reducers, MutableHKT>
+    | buildUseLocalSlice.UseLocalSliceOptionsWithInit<State, string, typeof reducers, MutableHKT> = lazy
+      ? { initialArg: "2", init: (value) => ({ count: Number(value) }), reducers }
+      : { initialState: { count: 2 }, reducers };
+
+  const [state, dispatch] = useMutableSlice(options);
+  expectTypeOf(state).toEqualTypeOf<State>();
+  expectTypeOf(dispatch).toEqualTypeOf<buildUseLocalSlice.DispatcherMap<typeof reducers, MutableHKT>>();
+  expectTypeOf(dispatch.increment).toEqualTypeOf<(payload: number) => void>();
+  // @ts-expect-error Conditional initialization retains required payloads.
+  dispatch.increment();
+}
+
 export function useFactoryTypeChecks(initialState: State) {
   const [state, dispatch] = useMutableSlice({
     initialState,
@@ -55,15 +76,9 @@ export function useFactoryTypeChecks(initialState: State) {
   // @ts-expect-error The returned hook state retains its readonly property.
   state.count++;
 
-  useMutableSlice({
-    initialState,
-    reducers: {
-      // @ts-expect-error This producer requires a replacement state, not void.
-      invalid(draft) {
-        draft.count++;
-      },
-    },
-  });
+  const invalidReducers = { invalid(draft: Mutable<State>) { draft.count++; } };
+  // @ts-expect-error This producer requires a replacement state, not void.
+  useMutableSlice({ initialState, reducers: invalidReducers });
 
   const [, immerDispatch] = useLocalSlice({
     initialState,
@@ -79,4 +94,32 @@ export function useFactoryTypeChecks(initialState: State) {
   immerDispatch.increment();
 
   return { unchangedStateType, replacement };
+}
+
+export function useLazyFactoryTypeChecks() {
+  const [state, dispatch] = useMutableSlice({
+    initialArg: "2",
+    init: (value) => {
+      expectTypeOf(value).toEqualTypeOf<string>();
+      return { count: Number(value) } as State;
+    },
+    reducers: {
+      increment(draft, action: { payload: number }) {
+        expectTypeOf(draft).toEqualTypeOf<Mutable<State>>();
+        draft.count += action.payload;
+        return draft;
+      },
+      optional: (draft, action: { payload?: number }) => ({
+        count: draft.count + (action.payload ?? 1),
+      }),
+      reset: () => ({ count: 0 }),
+    },
+  });
+  expectTypeOf(state).toEqualTypeOf<State>();
+  expectTypeOf(dispatch.increment).toEqualTypeOf<(payload: number) => void>();
+  expectTypeOf(dispatch.optional).toEqualTypeOf<(payload?: number) => void>();
+  expectTypeOf(dispatch.reset).toEqualTypeOf<() => void>();
+  expectTypeOf<keyof typeof dispatch>().toEqualTypeOf<"increment" | "optional" | "reset">();
+  // @ts-expect-error Lazy initialization retains required payloads.
+  dispatch.increment();
 }
